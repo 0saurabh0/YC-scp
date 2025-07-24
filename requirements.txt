@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+pandas
+streamlit
+lxml
+duckduckgo-search
+fake-useragent 
+selenium
+webdriver-manager 
