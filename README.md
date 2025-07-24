@@ -7,8 +7,6 @@ This project scrapes all companies from the [Y Combinator Companies Directory](h
 - **"Real-Time" Data Parser:**
   - The project was described as a “real-time parser” in the task, but since the YC directory doesn’t offer real-time APIs, push updates, or streaming mechanisms, there’s no need for WebSockets, Server-Sent Events (SSR), or persistent polling in this case. Instead, I’ve implemented a straightforward setup using Selenium and BeautifulSoup to fetch the latest available data on demand. If you’d prefer a different approach or have any specific requirements in mind, I’d be happy to adapt the implementation accordingly.
 
-- **Batch Inclusion Criteria:**
-  - Only companies explicitly tagged as **S25** (i.e., "Summer 2025", "Spring 2025", or "Winter 2025") are included in the dataset. Companies with other tags such as **X25** are **not** included, as per the project requirements.
 
 ## Features
 - **Automated scraping** of all YC companies in the 2025 batches (S25) using Selenium (handles scroll).

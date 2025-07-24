@@ -89,16 +89,16 @@ def get_company_details(name, yc_link):
             yc_slug = yc_link.rstrip('/').split('/')[-1]
             website = find_best_website_from_yc_page(detail_soup, name, yc_slug)
             if website:
-                print(f"🔗 Fallback website found for {name}: {website}")
+                print(f"Fallback website found for {name}: {website}")
             else:
-                print(f"⚠️  No website found for {name} on YC page.")
+                print(f"No website found for {name} on YC page.")
         linkedin_url = None
         linkedin_tag = detail_soup.find('a', href=lambda x: x and 'linkedin.com/company' in x)
         if linkedin_tag:
             linkedin_url = linkedin_tag.get('href')
         return website, linkedin_url
     except Exception as e:
-        print(f"❌ Error fetching details for {name}: {e}")
+        print(f"Error fetching details for {name}: {e}")
         return None, None
 
 
@@ -124,7 +124,7 @@ def process_single_company(card, csv_filename, company_count):
     name = name_tag.text.strip() if name_tag else None
     if not name:
         return False
-    print(f"\n🔍 Processing company {company_count}: {name}")
+    print(f"Processing company {company_count}: {name}")
     desc_tag = card.find('div', class_=lambda x: x and 'text-sm' in x)
     description = desc_tag.text.strip() if desc_tag else None
     batch_tag = None
@@ -133,14 +133,14 @@ def process_single_company(card, csv_filename, company_count):
             batch_tag = span.text.strip()
             break
     if not batch_tag:
-        print(f"❌ Skipping {name} - no valid batch tag")
+        print(f"Skipping {name} - no valid batch tag")
         return False
     yc_link = YC_BASE_URL + card.get('href')
     website, linkedin_url = get_company_details(name, yc_link)
     linkedin_description = None
     yc_s25_on_linkedin = False
     if linkedin_url:
-        print(f"📱 Getting LinkedIn data: {name}")
+        print(f"Getting LinkedIn data: {name}")
         linkedin_description, yc_s25_on_linkedin = get_linkedin_description(linkedin_url)
     company_data = {
         'name': name,
@@ -161,27 +161,27 @@ def append_to_csv(company_data, filename):
     df = pd.DataFrame([company_data])
     file_exists = os.path.isfile(filename)
     df.to_csv(filename, mode='a', header=not file_exists, index=False)
-    print(f"✅ Saved to CSV: {company_data['name']}")
+    print(f"Saved to CSV: {company_data['name']}")
 
 
 def get_available_driver():
     driver = None
     # Try Firefox first
     try:
-        print("🔍 Attempting to use Firefox...")
+        print("Attempting to use Firefox...")
         firefox_options = FirefoxOptions()
         firefox_options.headless = True
         firefox_options.add_argument('--width=1920')
         firefox_options.add_argument('--height=1080')
         service = FirefoxService(GeckoDriverManager().install())
         driver = webdriver.Firefox(service=service, options=firefox_options)
-        print("✅ Firefox driver initialized successfully")
+        print("Firefox driver initialized successfully")
         return driver, "Firefox"
     except Exception as e:
-        print(f"❌ Firefox not available: {e}")
+        print(f"Firefox not available: {e}")
         # Try Chrome as backup
         try:
-            print("🔍 Attempting to use Chrome...")
+            print("Attempting to use Chrome...")
             chrome_options = ChromeOptions()
             chrome_options.add_argument('--headless')
             chrome_options.add_argument('--no-sandbox')
@@ -190,38 +190,38 @@ def get_available_driver():
             chrome_options.add_argument('--window-size=1920,1080')
             service = ChromeService(ChromeDriverManager().install())
             driver = webdriver.Chrome(service=service, options=chrome_options)
-            print("✅ Chrome driver initialized successfully")
+            print("Chrome driver initialized successfully")
             return driver, "Chrome"
         except Exception as e:
-            print(f"❌ Chrome not available: {e}")
-            raise Exception("❌ No compatible browser found! Please install Firefox or Chrome.")
+            print(f"Chrome not available: {e}")
+            raise Exception("No compatible browser found! Please install Firefox or Chrome.")
 
 
 def get_yc_s25_companies():
     csv_filename = "yc_s25_companies.csv"
     if os.path.exists(csv_filename):
         os.remove(csv_filename)
-        print(f"🗑️  Cleared existing {csv_filename}")
-    url = "https://www.ycombinator.com/companies?batch=Summer%202025&batch=Spring%202025&batch=Winter%202025"
+        print(f"Cleared existing {csv_filename}")
+    url = "https://www.ycombinator.com/companies?batch=Summer%202025"
     driver, browser_name = get_available_driver()
-    print(f"🚀 Using {browser_name} browser for scraping")
+    print(f"Using {browser_name} browser for scraping")
     try:
         driver.get(url)
-        print("🌐 Page loaded, waiting for companies to appear...")
+        print("Page loaded, waiting for companies to appear...")
         wait = WebDriverWait(driver, 20)
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[class*="_company_"]')))
         time.sleep(3)
-        print("📜 Scrolling to load all companies...")
+        print("Scrolling to load all companies...")
         previous_count = 0
         max_attempts = 20
         attempt = 0
         while attempt < max_attempts:
             current_cards = driver.find_elements(By.CSS_SELECTOR, 'a[class*="_company_"]')
             current_count = len(current_cards)
-            print(f"📊 Found {current_count} companies (attempt {attempt + 1})")
+            print(f"Found {current_count} companies (attempt {attempt + 1})")
             if current_count == previous_count:
                 if attempt >= 3:
-                    print("🏁 No more companies loading, finishing...")
+                    print("No more companies loading, finishing...")
                     break
             else:
                 attempt = 0
@@ -243,16 +243,16 @@ def get_yc_s25_companies():
             if href not in unique_cards:
                 unique_cards[href] = card
         cards = list(unique_cards.values())
-        print(f"🎯 Found {len(cards)} unique company cards to process")
+        print(f"Found {len(cards)} unique company cards to process")
         processed_count = 0
         for i, card in enumerate(cards, 1):
             if process_single_company(card, csv_filename, i):
                 processed_count += 1
-                print(f"✅ Progress: {processed_count}/{len(cards)} companies processed")
+                print(f"Progress: {processed_count}/{len(cards)} companies processed")
             if processed_count > 0 and processed_count % 10 == 0:
-                print(f"\n🎉 Processed {processed_count} companies so far!")
+                print(f"Processed {processed_count} companies so far!")
                 print("You can stop the script anytime and check the CSV file.")
-        print(f"\n🎉 Completed! Processed {processed_count} companies total.")
+        print(f"Completed! Processed {processed_count} companies total.")
         return processed_count
     finally:
         driver.quit()
@@ -264,11 +264,11 @@ def main():
     print("You can stop the script anytime and check yc_s25_companies.csv and run the streamlit app\n")
     try:
         processed_count = get_yc_s25_companies()
-        print(f"\n✅ Scraping completed! {processed_count} companies saved to yc_s25_companies.csv")
+        print(f"Scraping completed! {processed_count} companies saved to yc_s25_companies.csv")
     except KeyboardInterrupt:
-        print("\n⏹️  Scraping interrupted by user. Check yc_s25_companies.csv for partial results.")
+        print("Scraping interrupted by user. Check yc_s25_companies.csv for partial results.")
     except Exception as e:
-        print(f"\n❌ Error occurred: {e}")
+        print(f"Error occurred: {e}")
         print("Check yc_s25_companies.csv for any partial results.")
 
 
